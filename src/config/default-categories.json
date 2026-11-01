@@ -1,0 +1,186 @@
+[
+  {
+    "id": "participation",
+    "label": "Participación entusiasta en todas las actividades",
+    "kind": "add",
+    "suggested_points": 50,
+    "active": true,
+    "version": 1
+  },
+  {
+    "id": "service",
+    "label": "Servicio, compasión o ayuda a otros",
+    "kind": "add",
+    "suggested_points": 30,
+    "active": true,
+    "version": 1
+  },
+  {
+    "id": "attitude",
+    "label": "Buena actitud / buen comportamiento",
+    "kind": "add",
+    "suggested_points": 25,
+    "active": true,
+    "version": 1
+  },
+  {
+    "id": "verses",
+    "label": "Memorizar y recitar versículos asignados",
+    "kind": "add",
+    "suggested_points": 20,
+    "active": true,
+    "version": 1
+  },
+  {
+    "id": "praise",
+    "label": "Participación activa en alabanza y dinámicas",
+    "kind": "add",
+    "suggested_points": 20,
+    "active": true,
+    "version": 1
+  },
+  {
+    "id": "cleanliness",
+    "label": "Buena higiene y cuidado de instalaciones",
+    "kind": "add",
+    "suggested_points": 15,
+    "active": true,
+    "version": 1
+  },
+  {
+    "id": "punctuality",
+    "label": "Puntualidad grupal",
+    "kind": "add",
+    "suggested_points": 15,
+    "active": true,
+    "version": 1
+  },
+  {
+    "id": "first",
+    "label": "Primer equipo en terminar el juego",
+    "kind": "add",
+    "suggested_points": 30,
+    "active": true,
+    "version": 1
+  },
+  {
+    "id": "fair",
+    "label": "Juego limpio",
+    "kind": "add",
+    "suggested_points": 10,
+    "active": true,
+    "version": 1
+  },
+  {
+    "id": "scarf-win",
+    "label": "Robar pañoleta contraria",
+    "kind": "add",
+    "suggested_points": 5,
+    "active": true,
+    "version": 1
+  },
+  {
+    "id": "flag-win",
+    "label": "Robar bandera contraria",
+    "kind": "add",
+    "suggested_points": 30,
+    "active": true,
+    "version": 1
+  },
+  {
+    "id": "teamwork",
+    "label": "Trabajo en equipo",
+    "kind": "add",
+    "suggested_points": 0,
+    "active": true,
+    "version": 1
+  },
+  {
+    "id": "cheating",
+    "label": "Trampa, deshonestidad o sabotaje",
+    "kind": "subtract",
+    "suggested_points": 60,
+    "active": true,
+    "version": 1
+  },
+  {
+    "id": "damage",
+    "label": "Dañar materiales o recursos del ministerio",
+    "kind": "subtract",
+    "suggested_points": 50,
+    "active": true,
+    "version": 1
+  },
+  {
+    "id": "argument",
+    "label": "Peleas físicas o verbales e insultos",
+    "kind": "subtract",
+    "suggested_points": 40,
+    "active": true,
+    "version": 1
+  },
+  {
+    "id": "irreverence",
+    "label": "Falta de reverencia en tiempos espirituales",
+    "kind": "subtract",
+    "suggested_points": 30,
+    "active": true,
+    "version": 1
+  },
+  {
+    "id": "offensive",
+    "label": "Vocabulario inapropiado o groserías",
+    "kind": "subtract",
+    "suggested_points": 30,
+    "active": true,
+    "version": 1
+  },
+  {
+    "id": "litter",
+    "label": "Ensuciar o dejar desorden",
+    "kind": "subtract",
+    "suggested_points": 20,
+    "active": true,
+    "version": 1
+  },
+  {
+    "id": "absence",
+    "label": "No participar en conferencias sin justificación",
+    "kind": "subtract",
+    "suggested_points": 20,
+    "active": true,
+    "version": 1
+  },
+  {
+    "id": "incomplete",
+    "label": "Juego incompleto",
+    "kind": "subtract",
+    "suggested_points": 10,
+    "active": true,
+    "version": 1
+  },
+  {
+    "id": "scarf-loss",
+    "label": "Robo de pañoleta",
+    "kind": "subtract",
+    "suggested_points": 5,
+    "active": true,
+    "version": 1
+  },
+  {
+    "id": "flag-loss",
+    "label": "Robo de bandera",
+    "kind": "subtract",
+    "suggested_points": 30,
+    "active": true,
+    "version": 1
+  },
+  {
+    "id": "guide",
+    "label": "Conducta inapropiada de guía o subguía",
+    "kind": "subtract",
+    "suggested_points": 50,
+    "active": true,
+    "version": 1
+  }
+]
