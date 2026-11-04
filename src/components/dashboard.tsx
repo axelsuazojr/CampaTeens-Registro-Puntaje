@@ -490,7 +490,7 @@ function ScoreForm({state,disabled,prepare}:{state:AppState;disabled:boolean;pre
         <label>Categoría<select required value={choice?.id||''} onChange={e=>select(categories.find(c=>c.id===e.target.value)||null)}><option value="">Selecciona el motivo</option>{categories.map(c=><option key={c.id} value={c.id}>{c.label}</option>)}</select></label>
         {!categories.length&&<div className="notice">No hay categorías para esta acción. Solicita al administrador que agregue una.</div>}
         {stale&&<div className="error" role="alert">Esta categoría cambió o fue quitada. Selecciónala de nuevo antes de registrar.</div>}
-        <label>Lugar del equipo <span className="optional">opcional</span><select value={place} onChange={e=>setPlace(e.target.value)} disabled={!game}><option value="">Sin asignar lugar</option>{PLACES.map((p,i)=>{const taken=occupied.find(x=>x.place===i+1);return <option key={i} value={i+1} disabled={!!taken||!!game?.award_operation||!!assignedTeam}>{i+1}.º lugar · +{fmt(p)} puntos{taken?' · asignado':''}</option>})}</select></label>
+        <label>Lugar del equipo <select value={place} onChange={e=>setPlace(e.target.value)} disabled={!game}><option value="">Sin asignar lugar</option>{PLACES.map((p,i)=>{const taken=occupied.find(x=>x.place===i+1);return <option key={i} value={i+1} disabled={!!taken||!!game?.award_operation||!!assignedTeam}>{i+1}.º lugar · +{fmt(p)} puntos{taken?' · asignado':''}</option>})}</select></label>
         {!game&&<p className="muted small-text">Selecciona un juego para asignar un lugar.</p>}
         {game?.award_operation&&<p className="muted small-text">Los lugares de este juego ya fueron asignados.</p>}
         {assignedTeam&&!game?.award_operation&&<p className="muted small-text">Este equipo ya tiene el {assignedTeam.place}.º lugar en este juego.</p>}
@@ -500,7 +500,7 @@ function ScoreForm({state,disabled,prepare}:{state:AppState;disabled:boolean;pre
           <span className={'points-large '+(kind==='add'?'positive':'negative')}>{kind==='add'?'+':'−'}{Number.isFinite(amount)?fmt(amount):'0'}</span>
         </div>
         {choice&&<p className="muted small-text">{choice.suggested_points?'Sugerencia: '+choice.suggested_points+' puntos. Puedes ajustar la cantidad.':'Cantidad manual: esta categoría no tiene puntos sugeridos.'}</p>}
-        <label>Observación <span className="optional">opcional</span><textarea value={note} maxLength={200} onChange={e=>setNote(e.target.value)} placeholder="Detalle breve del registro"/></label>
+        <label>Observación <textarea value={note} maxLength={200} onChange={e=>setNote(e.target.value)} placeholder="Detalle breve del registro"/></label>
         <label>Asociar a un juego<select required value={round} onChange={e=>{setRound(e.target.value);setPlace('')}}><option value="">Selecciona un juego</option>{state.rounds.map(r=><option key={r.id} value={r.id}>{r.name}</option>)}</select></label>
         {!state.rounds.length&&<div className="notice">Solicita al administrador que cree un juego antes de registrar puntos.</div>}
         {place&&<p className="muted small-text">Categoría: {signed(kind==='add'?amount:-amount)} puntos · Lugar: +{fmt(placePoints)} puntos</p>}
