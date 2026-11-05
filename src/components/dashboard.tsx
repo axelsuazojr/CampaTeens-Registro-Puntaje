@@ -9,7 +9,7 @@ type User={id:number;name:string;role:'admin'|'judge'}
 type Judge=User&{email:string;active:boolean}
 type Team={id:string;name:string;color:string;mark:string;total:number;added:number;deducted:number;position:number;image:string|null}
 type Category={id:string;label:string;kind:'add'|'subtract';suggested_points:number;active:boolean;version:number}
-type Movement={id:string;team_slug:string;delta:number;reason:string;judge_name:string;created_at:string;reversed:boolean;reversal_of:string}
+type Movement={id:string;team_slug:string;delta:number;reason:string;judge_name:string;created_at:string;reversed:boolean;reversal_of:string;can_reverse?:boolean}
 type Round={id:string;name:string;award_operation:string;placements?:{place:number;team:string}[]}
 type AppState={user:User;teams:Team[];categories:Category[];history:Movement[];rounds:Round[];branding:{name:string;logo:string|null}}
 type Command={path:string;data:Record<string,unknown>;summary:string}
@@ -108,7 +108,6 @@ export default function Dashboard(){
     try{
       const s=await api('state')
       if(id!==version.current)return
-
       setState(s)
       setLogin(false)
       setOnline(true)
@@ -173,9 +172,7 @@ export default function Dashboard(){
 
     try{
       try{sessionStorage.setItem(key,JSON.stringify(c))}catch{}
-
       const r=await api(c.path,c.data)
-
       try{sessionStorage.removeItem(key)}catch{}
 
       setPending(null)
@@ -269,9 +266,7 @@ export default function Dashboard(){
     setError('')
 
     try{
-      if(file.size>2*1024*1024){
-        throw new Error('La imagen debe pesar hasta 2 MB.')
-      }
+      if(file.size>2*1024*1024)throw new Error('La imagen debe pesar hasta 2 MB.')
 
       const f=new FormData()
       f.set('file',file)
@@ -350,27 +345,19 @@ export default function Dashboard(){
   return <div className="app-shell">
     <aside className="sidebar">
       <Brand logo={state.branding.logo}/>
-
       <div className="workspace">
         <span className="workspace-icon"><Trophy size={19}/></span>
-        <div>
-          <strong>campaTeens</strong>
-          <small>{admin?'Administración del encuentro':'Registro de puntajes'}</small>
-        </div>
+        <div><strong>campaTeens</strong><small>{admin?'Administración del encuentro':'Registro de puntajes'}</small></div>
       </div>
-
       <span className="nav-label">{admin?'ADMINISTRACIÓN':'JUEZ'}</span>
-
       <nav>
         {allowed.map(t=><button key={t.id} className={current===t.id?'active':''} onClick={()=>{setTab(t.id);setError('')}}><t.icon size={18}/>{t.name}</button>)}
       </nav>
-
       <div className="sidebar-bottom">
         <div className="sync-card">
           <span className={'status-dot '+(!online?'offline':'')}/>
           <div><strong>{online?'Conectado':'Sin conexión'}</strong><small>Actualiza cada 15 segundos</small></div>
         </div>
-
         <button className="profile" onClick={logout}>
           <span className="user-avatar">{state.user.name.slice(0,2).toUpperCase()}</span>
           <span><strong>{state.user.name}</strong><small>{admin?'Administrador':'Juez'} · Cerrar sesión</small></span>
@@ -391,48 +378,23 @@ export default function Dashboard(){
 
       <main className="content">
         <div style={{display:'flex',justifyContent:'flex-end',flexWrap:'wrap',gap:8,marginBottom:16}}>
-          {admin&&<Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={disabled}
-            onClick={()=>{
-              const confirmation=window.prompt(
-                'Se pondrán en cero los puntajes de todos los equipos. Los movimientos anteriores y los lugares asignados se conservarán. Escribe REINICIAR para continuar.'
-              )
+          {admin&&<Button type="button" variant="outline" size="sm" disabled={disabled} onClick={()=>{
+            const confirmation=window.prompt('Se pondrán en cero los puntajes y se liberarán los lugares asignados en todos los juegos. Se conservará el historial. Escribe REINICIAR para continuar.')
+            if(confirmation==='REINICIAR')prepare('move',{resetScores:true,confirmation},'Reiniciar los puntajes y liberar los lugares de todos los juegos. Se conservará el historial.')
+          }}>Reiniciar puntajes</Button>}
 
-              if(confirmation==='REINICIAR'){
-                prepare(
-                  'move',
-                  {resetScores:true,confirmation},
-                  'Reiniciar a cero los puntajes de todos los equipos. Se conservarán el historial y los lugares asignados.'
-                )
-              }
-            }}
-          >
-            Reiniciar puntajes
-          </Button>}
-
-          <Button type="button" variant="outline" size="sm" onClick={logout}>
-            <LogOut size={16}/> Cerrar sesión
-          </Button>
+          <Button type="button" variant="outline" size="sm" onClick={logout}><LogOut size={16}/> Cerrar sesión</Button>
         </div>
 
-        <div className="page-heading">
-          <div>
-            <span className="eyebrow">CAMPATEENS · CONTROL DE PUNTAJES</span>
-            <h1>{current==='dashboard'?'Cada punto cuenta.':allowed.find(t=>t.id===current)?.name}</h1>
-            <p className="muted">{current==='score'?'Selecciona el equipo y la categoría. Ingresa los puntos y confirma.':current==='categories'?'Organiza los motivos para sumar o quitar puntos.':current==='settings'?'La identidad del encuentro, en todos los dispositivos.':'Un encuentro. Seis equipos. Un registro compartido.'}</p>
-          </div>
-        </div>
+        <div className="page-heading"><div>
+          <span className="eyebrow">CAMPATEENS · CONTROL DE PUNTAJES</span>
+          <h1>{current==='dashboard'?'Cada punto cuenta.':allowed.find(t=>t.id===current)?.name}</h1>
+          <p className="muted">{current==='score'?'Selecciona el equipo y la categoría. Ingresa los puntos y confirma.':current==='categories'?'Organiza los motivos para sumar o quitar puntos.':current==='settings'?'La identidad del encuentro, en todos los dispositivos.':'Un encuentro. Seis equipos. Un registro compartido.'}</p>
+        </div></div>
 
         {!online&&<div className="error" role="status">No hay conexión. Estos datos pueden estar desactualizados. Los cambios solo se confirman cuando el servidor los guarda.</div>}
         {error&&<div className="error" role="alert">{error}</div>}
-
-        {pending&&<div className="pending">
-          <div><strong>Envío pendiente de confirmación</strong><p>{pending.summary}</p></div>
-          <Button disabled={busy} variant="outline" onClick={()=>send(pending)}>Reintentar mismo envío</Button>
-        </div>}
+        {pending&&<div className="pending"><div><strong>Envío pendiente de confirmación</strong><p>{pending.summary}</p></div><Button disabled={busy} variant="outline" onClick={()=>send(pending)}>Reintentar mismo envío</Button></div>}
 
         {current==='dashboard'&&<Leaderboard teams={state.teams} onSelect={id=>{setTab('score');sessionStorage.setItem('campateens:selected-team',id)}}/>}
         {current==='score'&&<ScoreForm state={state} disabled={disabled} prepare={prepare}/>}
@@ -446,7 +408,7 @@ export default function Dashboard(){
               <td><strong>{TEAMS.find(t=>t.id===m.team_slug)?.name}</strong><small>{m.reason}</small>{m.reversed&&<span className="tag">ANULADO</span>}</td>
               <td className={'points '+(m.delta>0?'positive':'negative')}>{signed(m.delta)}</td>
               <td>{m.judge_name}<small>{date(m.created_at)}</small></td>
-              <td>{!m.reversed&&!m.reversal_of&&<Button variant="ghost" size="sm" disabled={disabled} onClick={()=>{
+              <td>{!m.reversed&&!m.reversal_of&&m.can_reverse!==false&&<Button variant="ghost" size="sm" disabled={disabled} onClick={()=>{
                 const reason=window.prompt('Motivo de la anulación (mínimo 3 caracteres):')
                 if(reason&&reason.trim().length>=3)prepare('reverse',{movementId:m.id,reason:reason.trim()},'Anular '+signed(m.delta)+' puntos. El original se conservará.')
               }}>Anular</Button>}</td>
@@ -455,9 +417,7 @@ export default function Dashboard(){
         </Panel>}
 
         {admin&&current==='teams'&&<div className="team-grid">{state.teams.map(t=><Panel key={t.id} title={t.name}><div className="team-spotlight"><Avatar team={t} large/><strong>{fmt(t.total)} <small>puntos</small></strong><ImagePicker label="Cambiar imagen" disabled={disabled} onFile={f=>upload('image',f,t.id)}/></div></Panel>)}</div>}
-
         {admin&&current==='users'&&<Accounts disabled={disabled} onError={setError} notify={setToast} currentUser={state.user}/>}
-
         {admin&&current==='settings'&&<Panel title="Logo de campaTeens" detail="Solo el administrador puede cambiarlo. Se mostrará a todos los usuarios después de iniciar sesión."><div className="logo-settings">{state.branding.logo?<img className="logo-preview" src={state.branding.logo} alt="Logo actual de campaTeens"/>:<div className="logo-placeholder"><Flag size={35}/><span>Agrega el logo de tu encuentro</span></div>}<ImagePicker label={state.branding.logo?'Cambiar logo':'Agregar logo'} disabled={disabled} onFile={f=>upload('logo',f)}/>{state.branding.logo&&<Button variant="ghost" disabled={disabled} onClick={()=>prepare('logo-remove',{},'Quitar el logo actual de campaTeens.')}>Quitar logo</Button>}<p className="muted">JPG, PNG o WEBP · hasta 2 MB. El archivo se guarda en Drive.</p></div></Panel>}
 
         <footer className="main-footer"><span>campaTeens · Juego limpio. Puntos claros.</span><span>{admin?'Administrador':'Juez'}</span></footer>
@@ -496,36 +456,28 @@ function ScoreForm({state,disabled,prepare}:{state:AppState;disabled:boolean;pre
   const [points,setPoints]=useState('')
   const [note,setNote]=useState('')
   const [round,setRound]=useState('')
-  const [place,setPlace]=useState('')
 
   useEffect(()=>{try{const t=sessionStorage.getItem('campateens:selected-team');if(TEAMS.some(x=>x.id===t))setTeam(t!);sessionStorage.removeItem('campateens:selected-team')}catch{}},[])
 
-  const categories=state.categories.filter(c=>c.active&&c.kind===kind)
-  const live=state.categories.find(c=>c.id===choice?.id&&c.active)
+  const categories=state.categories.filter(c=>c.active&&c.kind===kind&&c.id!=='first')
+  const live=state.categories.find(c=>c.id===choice?.id&&c.active&&c.id!=='first')
   const stale=!!choice&&(!live||live.version!==choice.version)
-  const amount=Number(points),selected=state.teams.find(t=>t.id===team)!
+  const amount=Number(points)
+  const selected=state.teams.find(t=>t.id===team)!
   const game=state.rounds.find(r=>r.id===round)
-  const occupied=game?.placements||[]
-  const placeNumber=Number(place)
-  const placePoints=place?(PLACES[placeNumber-1]??0):0
-  const assignedTeam=occupied.find(p=>p.team===team)
-  const assignedPlace=occupied.find(p=>p.place===placeNumber)
-  const invalidPlace=!!place&&(!Number.isInteger(placeNumber)||placeNumber<1||placeNumber>6||!!game?.award_operation||!!assignedTeam||!!assignedPlace)
-  const valid=!!choice&&!stale&&Number.isInteger(amount)&&amount>=1&&amount<=10000&&!!game&&!invalidPlace
-  const net=(kind==='add'?amount:-amount)+placePoints
-  const total=Number.isFinite(net)?net:0
+  const valid=!!choice&&!stale&&Number.isInteger(amount)&&amount>=1&&amount<=10000&&!!game
+  const delta=Number.isFinite(amount)?(kind==='add'?amount:-amount):0
   const select=(c:Category|null)=>{setChoice(c);setPoints(c?.suggested_points?String(c.suggested_points):'')}
 
   return <div className="score-layout">
     <Panel title="Registrar puntaje" detail={'Juez: '+state.user.name}>
       <form className="form-body" onSubmit={e=>{
-        e.preventDefault();if(!valid)return
-        const categoryDelta=kind==='add'?amount:-amount
-        const breakdown=`Categoría: ${choice!.label} (${signed(categoryDelta)} puntos)`+(place?` · ${place}.º lugar (+${placePoints} puntos)`:'')
-        prepare('move',{team,categoryId:choice!.id,categoryVersion:choice!.version,amount,note:note.trim(),roundId:round,...(place?{place:placeNumber}:{})},`${selected.name} · ${game!.name} · ${breakdown} · Total: ${signed(total)} puntos${note?' · '+note:''}`)
+        e.preventDefault()
+        if(!valid)return
+        prepare('move',{team,categoryId:choice!.id,categoryVersion:choice!.version,amount,note:note.trim(),roundId:round},`${selected.name} · ${game!.name} · Categoría: ${choice!.label} (${signed(delta)} puntos)${note?' · '+note:''}`)
       }}>
         <div className="field-title">1. Equipo</div>
-        <div className="team-picker">{TEAMS.map(t=><button type="button" key={t.id} className={team===t.id?'selected':''} onClick={()=>{setTeam(t.id);setPlace('')}}><Avatar team={state.teams.find(x=>x.id===t.id)!}/><span>{t.name}</span></button>)}</div>
+        <div className="team-picker">{TEAMS.map(t=><button type="button" key={t.id} className={team===t.id?'selected':''} onClick={()=>setTeam(t.id)}><Avatar team={state.teams.find(x=>x.id===t.id)!}/><span>{t.name}</span></button>)}</div>
 
         <div className="field-title">2. ¿Qué deseas registrar?</div>
         <div className="segmented">
@@ -534,7 +486,6 @@ function ScoreForm({state,disabled,prepare}:{state:AppState;disabled:boolean;pre
         </div>
 
         <label>Categoría<select required value={choice?.id||''} onChange={e=>select(categories.find(c=>c.id===e.target.value)||null)}><option value="">Selecciona el motivo</option>{categories.map(c=><option key={c.id} value={c.id}>{c.label}</option>)}</select></label>
-
         {!categories.length&&<div className="notice">No hay categorías para esta acción. Solicita al administrador que agregue una.</div>}
         {stale&&<div className="error" role="alert">Esta categoría cambió o fue quitada. Selecciónala de nuevo antes de registrar.</div>}
 
@@ -544,26 +495,11 @@ function ScoreForm({state,disabled,prepare}:{state:AppState;disabled:boolean;pre
         </div>
 
         {choice&&<p className="muted small-text">{choice.suggested_points?'Sugerencia: '+choice.suggested_points+' puntos. Puedes ajustar la cantidad.':'Cantidad manual: esta categoría no tiene puntos sugeridos.'}</p>}
-
         <label>Observación <span className="optional">opcional</span><textarea value={note} maxLength={200} onChange={e=>setNote(e.target.value)} placeholder="Detalle breve del registro"/></label>
-
-        <label>Asociar a un juego<select required value={round} onChange={e=>{setRound(e.target.value);setPlace('')}}><option value="">Selecciona un juego</option>{state.rounds.map(r=><option key={r.id} value={r.id}>{r.name}</option>)}</select></label>
-
+        <label>Asociar a un juego<select required value={round} onChange={e=>setRound(e.target.value)}><option value="">Selecciona un juego</option>{state.rounds.map(r=><option key={r.id} value={r.id}>{r.name}</option>)}</select></label>
         {!state.rounds.length&&<div className="notice">Solicita al administrador que cree un juego antes de registrar puntos.</div>}
 
-        <label>Lugar del equipo <span className="optional">opcional</span><select value={place} onChange={e=>setPlace(e.target.value)} disabled={!game}><option value="">Sin asignar lugar</option>{PLACES.map((p,i)=>{const taken=occupied.find(x=>x.place===i+1);return <option key={i} value={i+1} disabled={!!taken||!!game?.award_operation||!!assignedTeam}>{i+1}.º lugar · +{fmt(p)} puntos{taken?' · asignado':''}</option>})}</select></label>
-
-        {!game&&<p className="muted small-text">Selecciona un juego para asignar un lugar.</p>}
-        {game?.award_operation&&<p className="muted small-text">Los lugares de este juego ya fueron asignados.</p>}
-        {assignedTeam&&!game?.award_operation&&<p className="muted small-text">Este equipo ya tiene el {assignedTeam.place}.º lugar en este juego.</p>}
-        {invalidPlace&&<div className="error" role="alert">El lugar ya no está disponible. Actualiza y selecciona uno libre.</div>}
-
-        {place&&<p className="muted small-text">Categoría: {signed(kind==='add'?amount:-amount)} puntos · Lugar: +{fmt(placePoints)} puntos</p>}
-
-        <div className="score-summary">
-          <div><small>{selected.name}</small><strong className={total<0?'negative':'positive'}>{signed(total)} <span>puntos</span></strong></div>
-          <Button disabled={disabled||!valid}>Revisar registro <ArrowRight size={17}/></Button>
-        </div>
+        <div className="score-summary"><div><small>{selected.name}</small><strong className={delta<0?'negative':'positive'}>{signed(delta)} <span>puntos</span></strong></div><Button disabled={disabled||!valid}>Revisar registro <ArrowRight size={17}/></Button></div>
       </form>
     </Panel>
 
@@ -591,7 +527,7 @@ function Categories({categories,disabled,send,prepare}:{categories:Category[];di
   return <div className="category-layout">
     <Panel title="Categorías del registro" detail="Quitar una categoría la retira del selector y conserva los registros anteriores.">
       <div className="form-body category-filter"><div className="segmented"><button className={show==='add'?'active':''} onClick={()=>setShow('add')}>Otorgar</button><button className={show==='subtract'?'active':''} onClick={()=>setShow('subtract')}>Quitar</button></div></div>
-      <div className="category-list">{categories.filter(c=>c.active&&c.kind===show).map(c=><div className="category-row" key={c.id}>
+      <div className="category-list">{categories.filter(c=>c.active&&c.kind===show&&c.id!=='first').map(c=><div className="category-row" key={c.id}>
         <span className={'move-icon '+(c.kind==='add'?'positive-bg':'negative-bg')}>{c.kind==='add'?<ArrowUpRight size={17}/>:<ArrowDownLeft size={17}/>}</span>
         <div className="category-copy"><strong>{c.label}</strong><small>{c.kind==='add'?'Otorgar':'Quitar'} · {c.suggested_points?'Sugerencia: '+signed((c.kind==='add'?1:-1)*c.suggested_points):'Cantidad manual'}</small></div>
         <div className="category-actions"><Button size="sm" variant="ghost" disabled={disabled} onClick={()=>{setEdit(c);setLabel(c.label);setKind(c.kind);setSuggested(String(c.suggested_points))}}>Editar</Button><Button size="sm" variant="ghost" disabled={disabled} onClick={()=>prepare('category-delete',{id:c.id,expectedVersion:c.version},'Quitar la categoría “'+c.label+'” del registro. Los movimientos previos se conservarán.')}>Quitar</Button></div>
